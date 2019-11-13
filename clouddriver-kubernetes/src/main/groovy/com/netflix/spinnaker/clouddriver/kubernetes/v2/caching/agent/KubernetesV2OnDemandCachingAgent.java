@@ -28,6 +28,7 @@ import com.netflix.spinnaker.cats.agent.CacheResult;
 import com.netflix.spinnaker.cats.agent.DefaultCacheResult;
 import com.netflix.spinnaker.cats.cache.CacheData;
 import com.netflix.spinnaker.cats.cache.DefaultCacheData;
+import com.netflix.spinnaker.cats.cache.RelationshipCacheFilter;
 import com.netflix.spinnaker.cats.provider.ProviderCache;
 import com.netflix.spinnaker.clouddriver.cache.OnDemandAgent;
 import com.netflix.spinnaker.clouddriver.cache.OnDemandMetricsSupport;
@@ -374,7 +375,9 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
             .map(Keys.InfrastructureCacheKey::toString)
             .collect(Collectors.toList());
 
-    return providerCache.getAll(ON_DEMAND_TYPE, matchingKeys).stream()
+    return providerCache
+        .getAll(ON_DEMAND_TYPE, matchingKeys, RelationshipCacheFilter.include(getAgentTypePrefix()))
+        .stream()
         .map(
             cd -> {
               Keys.InfrastructureCacheKey parsedKey =

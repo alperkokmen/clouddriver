@@ -62,8 +62,11 @@ public abstract class KubernetesCachingAgent<C extends KubernetesCredentials>
 
   @Override
   public String getAgentType() {
-    return String.format(
-        "%s/%s[%d/%d]", accountName, this.getClass().getSimpleName(), agentIndex + 1, agentCount);
+    return String.format("%s[%d/%d]", getAgentTypePrefix(), agentIndex + 1, agentCount);
+  }
+
+  protected String getAgentTypePrefix() {
+    return String.format("%s/%s", accountName, this.getClass().getSimpleName());
   }
 
   protected void reloadNamespaces() {
