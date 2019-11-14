@@ -28,6 +28,7 @@ import com.netflix.spinnaker.cats.agent.CacheResult;
 import com.netflix.spinnaker.cats.agent.DefaultCacheResult;
 import com.netflix.spinnaker.cats.cache.CacheData;
 import com.netflix.spinnaker.cats.cache.DefaultCacheData;
+import com.netflix.spinnaker.cats.cache.RelationshipCacheFilter;
 import com.netflix.spinnaker.cats.provider.ProviderCache;
 import com.netflix.spinnaker.clouddriver.cache.OnDemandAgent;
 import com.netflix.spinnaker.clouddriver.cache.OnDemandMetricsSupport;
@@ -356,10 +357,6 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
 
   @Override
   public Collection<Map> pendingOnDemandRequests(ProviderCache providerCache) {
-    if (!handleReadRequests()) {
-      return Collections.emptyList();
-    }
-
     List<String> matchingKeys =
         providerCache.getIdentifiers(ON_DEMAND_TYPE).stream()
             .map(Keys::parseKey)
@@ -374,7 +371,9 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
             .map(Keys.InfrastructureCacheKey::toString)
             .collect(Collectors.toList());
 
-    return providerCache.getAll(ON_DEMAND_TYPE, matchingKeys).stream()
+    return providerCache
+        .getAll(ON_DEMAND_TYPE, matchingKeys, RelationshipCacheFilter.include(getAgentType()))
+        .stream()
         .map(
             cd -> {
               Keys.InfrastructureCacheKey parsedKey =
@@ -398,15 +397,5 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
         .put("account", key.getAccount())
         .put("location", key.getNamespace())
         .build();
-  }
-
-  /**
-   * When fetching on-demand requests, we delegate to single caching agent, as the read request from
-   * the cache will return results for all namespaces anyway. This way we avoid having all agents
-   * perform the same query and filter to their namespaces, only to then re-combine all the results
-   * in the end.
-   */
-  private boolean handleReadRequests() {
-    return agentIndex == 0;
   }
 }
