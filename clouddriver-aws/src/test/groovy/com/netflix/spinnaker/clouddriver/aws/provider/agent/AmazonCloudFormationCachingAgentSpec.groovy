@@ -206,7 +206,7 @@ class AmazonCloudFormationCachingAgentSpec extends Specification {
   @Unroll
   void "OnDemand request should be handled for type '#onDemandType' and provider '#provider': '#expected'"() {
     when:
-    def result = agent.handles(onDemandType, provider)
+    def result = agent.handles(onDemandType, provider, null)
 
     then:
     result == expected

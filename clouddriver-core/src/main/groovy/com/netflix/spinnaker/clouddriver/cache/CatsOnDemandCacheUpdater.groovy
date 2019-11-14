@@ -50,13 +50,13 @@ class CatsOnDemandCacheUpdater implements OnDemandCacheUpdater {
   }
 
   @Override
-  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider) {
-    onDemandAgents.any { it.handles(type, cloudProvider) }
+  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
+    onDemandAgents.any { it.handles(type, cloudProvider, locations) }
   }
 
   @Override
   OnDemandCacheResult handle(OnDemandAgent.OnDemandType type, String cloudProvider, Map<String, ?> data) {
-    Collection<OnDemandAgent> onDemandAgents = onDemandAgents.findAll { it.handles(type, cloudProvider) }
+    Collection<OnDemandAgent> onDemandAgents = onDemandAgents.findAll { it.handles(type, cloudProvider, null) }
     return handle(type, onDemandAgents, data)
   }
 
@@ -139,15 +139,15 @@ class CatsOnDemandCacheUpdater implements OnDemandCacheUpdater {
   }
 
   @Override
-  Collection<Map> pendingOnDemandRequests(OnDemandAgent.OnDemandType type, String cloudProvider) {
+  Collection<Map> pendingOnDemandRequests(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
     if (agentScheduler.atomic) {
       return []
     }
 
-    Collection<OnDemandAgent> onDemandAgents = onDemandAgents.findAll { it.handles(type, cloudProvider) }
+    Collection<OnDemandAgent> onDemandAgents = onDemandAgents.findAll { it.handles(type, cloudProvider, locations) }
     return onDemandAgents.collect {
       def providerCache = catsModule.getProviderRegistry().getProviderCache(it.providerName)
-      it.pendingOnDemandRequests(providerCache)
+      it.pendingOnDemandRequests(providerCache, locations)
     }.flatten()
   }
 
@@ -157,7 +157,7 @@ class CatsOnDemandCacheUpdater implements OnDemandCacheUpdater {
       return null
     }
 
-    Collection<OnDemandAgent> onDemandAgents = onDemandAgents.findAll { it.handles(type, cloudProvider) }
+    Collection<OnDemandAgent> onDemandAgents = onDemandAgents.findAll { it.handles(type, cloudProvider, null) }
     return onDemandAgents.findResults {
       def providerCache = catsModule.getProviderRegistry().getProviderCache(it.providerName)
       it.pendingOnDemandRequest(providerCache, id)

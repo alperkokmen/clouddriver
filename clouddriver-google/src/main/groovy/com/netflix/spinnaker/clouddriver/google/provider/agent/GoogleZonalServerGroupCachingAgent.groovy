@@ -199,7 +199,7 @@ class GoogleZonalServerGroupCachingAgent extends AbstractGoogleCachingAgent impl
   }
 
   @Override
-  boolean handles(OnDemandType type, String cloudProvider) {
+  boolean handles(OnDemandType type, String cloudProvider, List<String> locations) {
     type == OnDemandType.ServerGroup && cloudProvider == GoogleCloudProvider.ID
   }
 

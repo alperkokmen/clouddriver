@@ -84,7 +84,7 @@ abstract class AzureCachingAgent implements CachingAgent, OnDemandAgent, Account
   }
 
   @Override
-  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider) {
+  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
     type == getOnDemandType() && cloudProvider == azureCloudProvider.id
   }
 

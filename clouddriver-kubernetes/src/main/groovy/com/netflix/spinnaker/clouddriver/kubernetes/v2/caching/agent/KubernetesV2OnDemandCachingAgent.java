@@ -351,12 +351,17 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
   }
 
   @Override
-  public boolean handles(OnDemandType type, String cloudProvider) {
-    return type == Manifest && cloudProvider.equals(KubernetesCloudProvider.getID());
+  public boolean handles(OnDemandType type, String cloudProvider, List<String> locations) {
+    return type == Manifest
+        && cloudProvider.equals(KubernetesCloudProvider.getID())
+        && handlesLocations(locations);
   }
 
   @Override
-  public Collection<Map> pendingOnDemandRequests(ProviderCache providerCache) {
+  public Collection<Map> pendingOnDemandRequests(
+      ProviderCache providerCache, List<String> locations) {
+    Set<String> locationsSet =
+        new HashSet<>(locations == null ? Collections.emptyList() : locations);
     List<String> matchingKeys =
         providerCache.getIdentifiers(ON_DEMAND_TYPE).stream()
             .map(Keys::parseKey)
@@ -367,9 +372,16 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
             .filter(
                 i ->
                     i.getAccount().equals(getAccountName())
-                        && primaryKinds().contains(i.getKubernetesKind()))
+                        && primaryKinds().contains(i.getKubernetesKind())
+                        && locationsSet.contains(i.getNamespace()))
             .map(Keys.InfrastructureCacheKey::toString)
             .collect(Collectors.toList());
+
+    log.info(
+        "{}: locationsSet={}, matchingKeys={}",
+        getOnDemandAgentType(),
+        String.join(",", locationsSet),
+        String.join(",", matchingKeys));
 
     return providerCache
         .getAll(ON_DEMAND_TYPE, matchingKeys, RelationshipCacheFilter.include(getAgentType()))
@@ -391,11 +403,26 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
         .collect(Collectors.toList());
   }
 
+  @Override
+  public Collection<Map> pendingOnDemandRequests(ProviderCache providerCache) {
+    throw new UnsupportedOperationException(
+        "KubernetesV2OnDemandCachingAgent doesn't support querying without locations");
+  }
+
   private Map<String, String> mapKeyToOnDemandResult(Keys.InfrastructureCacheKey key) {
     return new ImmutableMap.Builder<String, String>()
         .put("name", KubernetesManifest.getFullResourceName(key.getKubernetesKind(), key.getName()))
         .put("account", key.getAccount())
         .put("location", key.getNamespace())
         .build();
+  }
+
+  private boolean handlesLocations(List<String> locations) {
+    if (locations != null) {
+      reloadNamespaces();
+      return !Collections.disjoint(namespaces, locations);
+    }
+
+    return true;
   }
 }

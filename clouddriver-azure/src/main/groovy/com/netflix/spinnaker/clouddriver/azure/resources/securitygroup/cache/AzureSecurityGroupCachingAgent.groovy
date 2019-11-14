@@ -97,7 +97,7 @@ class AzureSecurityGroupCachingAgent implements CachingAgent, OnDemandAgent, Acc
   }
 
   @Override
-  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider) {
+  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
     type == OnDemandAgent.OnDemandType.SecurityGroup && cloudProvider == azureCloudProvider.id
   }
 

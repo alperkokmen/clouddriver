@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,7 @@ public interface OnDemandAgent {
     }
   }
 
-  boolean handles(OnDemandType type, String cloudProvider);
+  boolean handles(OnDemandType type, String cloudProvider, List<String> locations);
 
   static class OnDemandResult {
     String sourceAgentType;
@@ -102,6 +103,11 @@ public interface OnDemandAgent {
   OnDemandResult handle(ProviderCache providerCache, Map<String, ?> data);
 
   Collection<Map> pendingOnDemandRequests(ProviderCache providerCache);
+
+  default Collection<Map> pendingOnDemandRequests(
+      ProviderCache providerCache, List<String> locations) {
+    return pendingOnDemandRequests(providerCache);
+  }
 
   default Map pendingOnDemandRequest(ProviderCache providerCache, String id) {
     Collection<Map> pendingOnDemandRequests = pendingOnDemandRequests(providerCache);

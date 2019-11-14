@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component
 class NoopOnDemandCacheUpdater implements OnDemandCacheUpdater {
 
   @Override
-  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider) {
+  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
     false
   }
 
@@ -37,7 +37,7 @@ class NoopOnDemandCacheUpdater implements OnDemandCacheUpdater {
   }
 
   @Override
-  Collection<Map> pendingOnDemandRequests(OnDemandAgent.OnDemandType type, String cloudProvider) {
+  Collection<Map> pendingOnDemandRequests(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
     return []
   }
 

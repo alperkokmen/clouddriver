@@ -32,9 +32,10 @@ interface OnDemandCacheUpdater {
    * Indicates if the updater is able to handle this on-demand request given the type and cloudProvider
    * @param type
    * @param cloudProvider
+   * @param locations
    * @return
    */
-  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider)
+  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations)
 
   /**
    * Handles the update request
@@ -44,7 +45,7 @@ interface OnDemandCacheUpdater {
    */
   OnDemandCacheResult handle(OnDemandAgent.OnDemandType type, String cloudProvider, Map<String, ? extends Object> data)
 
-  Collection<Map> pendingOnDemandRequests(OnDemandAgent.OnDemandType type, String cloudProvider)
+  Collection<Map> pendingOnDemandRequests(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations)
 
   Map pendingOnDemandRequest(OnDemandAgent.OnDemandType type, String cloudProvider, String id)
 

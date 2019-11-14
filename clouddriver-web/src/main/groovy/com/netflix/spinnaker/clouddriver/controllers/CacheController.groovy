@@ -40,7 +40,7 @@ class CacheController {
     OnDemandAgent.OnDemandType onDemandType = getOnDemandType(type);
 
     def onDemandCacheResult = onDemandCacheUpdaters.find {
-      it.handles(onDemandType, cloudProvider)
+      it.handles(onDemandType, cloudProvider, null)
     }?.handle(onDemandType, cloudProvider, data)
 
     def cacheStatus = onDemandCacheResult?.status
@@ -65,16 +65,17 @@ class CacheController {
   @RequestMapping(method = RequestMethod.GET, value = "/{cloudProvider}/{type}")
   Collection<Map> pendingOnDemands(@PathVariable String cloudProvider,
                                    @PathVariable String type,
-                                   @RequestParam(value = "id", required = false) String id) {
+                                   @RequestParam(value = "id", required = false) String id,
+                                   @RequestParam(value = "locations", required = false) List<String> locations) {
     OnDemandAgent.OnDemandType onDemandType = getOnDemandType(type)
     onDemandCacheUpdaters.findAll {
-      it.handles(onDemandType, cloudProvider)
+      it.handles(onDemandType, cloudProvider, locations)
     }?.collect {
       if (id) {
         def pendingOnDemandRequest = it.pendingOnDemandRequest(onDemandType, cloudProvider, id)
         return pendingOnDemandRequest ? [ pendingOnDemandRequest ] : []
       }
-      return it.pendingOnDemandRequests(onDemandType, cloudProvider)
+      return it.pendingOnDemandRequests(onDemandType, cloudProvider, locations)
     }.flatten()
   }
 

@@ -178,7 +178,7 @@ public class TitusV2ClusterCachingAgent
   }
 
   @Override
-  public boolean handles(OnDemandType type, String cloudProvider) {
+  public boolean handles(OnDemandType type, String cloudProvider, List<String> locations) {
     return type == OnDemandType.ServerGroup && cloudProvider.equals(TitusCloudProvider.ID);
   }
 

@@ -82,7 +82,7 @@ class AppengineLoadBalancerCachingAgent extends AbstractAppengineCachingAgent im
   }
 
   @Override
-  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider) {
+  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
     type == OnDemandAgent.OnDemandType.LoadBalancer && cloudProvider == AppengineCloudProvider.ID
   }
 

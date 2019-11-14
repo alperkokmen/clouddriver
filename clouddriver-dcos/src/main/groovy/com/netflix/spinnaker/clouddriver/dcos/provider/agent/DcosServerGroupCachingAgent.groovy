@@ -158,7 +158,7 @@ class DcosServerGroupCachingAgent implements CachingAgent, OnDemandAgent, DcosCl
   }
 
   @Override
-  boolean handles(final OnDemandAgent.OnDemandType type, final String cloudProvider) {
+  boolean handles(final OnDemandAgent.OnDemandType type, final String cloudProvider, List<String> locations) {
     return OnDemandAgent.OnDemandType.ServerGroup == type && cloudProvider == dcosCloudProvider.id
   }
 

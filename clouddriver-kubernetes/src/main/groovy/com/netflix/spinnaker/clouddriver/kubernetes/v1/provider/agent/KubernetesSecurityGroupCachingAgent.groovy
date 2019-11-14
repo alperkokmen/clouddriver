@@ -160,7 +160,7 @@ class KubernetesSecurityGroupCachingAgent extends KubernetesV1CachingAgent imple
   }
 
   @Override
-  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider) {
+  boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
     ON_DEMAND_TYPE == type && cloudProvider == KubernetesCloudProvider.ID
   }
 

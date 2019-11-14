@@ -68,7 +68,7 @@ abstract class AbstractEcsOnDemandAgent<T> extends AbstractEcsCachingAgent<T>
   }
 
   @Override
-  public boolean handles(OnDemandType type, String cloudProvider) {
+  public boolean handles(OnDemandType type, String cloudProvider, List<String> locations) {
     return type.equals(OnDemandType.ServerGroup) && cloudProvider.equals(EcsCloudProvider.ID);
   }
 

@@ -79,7 +79,7 @@ public class AmazonCloudFormationCachingAgent
   }
 
   @Override
-  public boolean handles(OnDemandType type, String cloudProvider) {
+  public boolean handles(OnDemandType type, String cloudProvider, List<String> locations) {
     return OnDemandType.CloudFormation.equals(type) && cloudProvider.equals(AmazonCloudProvider.ID);
   }
 

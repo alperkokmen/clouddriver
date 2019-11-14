@@ -60,15 +60,15 @@ class KubernetesV1SecurityGroupCachingAgentSpec extends Specification {
   @Unroll
   void "correctly reports #type/#provider is handled by the security group caching agent (#result)"() {
     expect:
-    cachingAgent.handles(type, provider) == result
+    cachingAgent.handles(type, provider, location) == result
 
     where:
-    type                                     | provider                   || result
-    OnDemandAgent.OnDemandType.SecurityGroup | KubernetesCloudProvider.ID || true
-    OnDemandAgent.OnDemandType.ServerGroup   | KubernetesCloudProvider.ID || false
-    OnDemandAgent.OnDemandType.LoadBalancer  | KubernetesCloudProvider.ID || false
-    OnDemandAgent.OnDemandType.ServerGroup   | "google "                  || false
-    OnDemandAgent.OnDemandType.ServerGroup   | ""                         || false
-    null                                     | ""                         || false
+    type                                     | provider                   || location || result
+    OnDemandAgent.OnDemandType.SecurityGroup | KubernetesCloudProvider.ID || null     || true
+    OnDemandAgent.OnDemandType.ServerGroup   | KubernetesCloudProvider.ID || null     || false
+    OnDemandAgent.OnDemandType.LoadBalancer  | KubernetesCloudProvider.ID || null     || false
+    OnDemandAgent.OnDemandType.ServerGroup   | "google "                  || null     || false
+    OnDemandAgent.OnDemandType.ServerGroup   | ""                         || null     || false
+    null                                     | ""                         || null     || false
   }
 }

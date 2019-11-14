@@ -265,7 +265,8 @@ public class CloudFoundryCachingAgent implements CachingAgent, OnDemandAgent, Ac
   }
 
   @Override
-  public boolean handles(OnDemandAgent.OnDemandType type, String cloudProvider) {
+  public boolean handles(
+      OnDemandAgent.OnDemandType type, String cloudProvider, List<String> locations) {
     return type.equals(OnDemandAgent.OnDemandType.ServerGroup)
         && cloudProvider.equals(CloudFoundryProvider.PROVIDER_ID);
   }
