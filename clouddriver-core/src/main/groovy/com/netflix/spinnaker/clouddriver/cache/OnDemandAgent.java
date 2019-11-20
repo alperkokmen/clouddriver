@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -59,6 +60,11 @@ public interface OnDemandAgent {
   }
 
   boolean handles(OnDemandType type, String cloudProvider);
+
+  default boolean handles(
+      OnDemandType type, String cloudProvider, @Nonnull Map<String, String> data) {
+    return handles(type, cloudProvider);
+  }
 
   @Data
   class OnDemandResult {
@@ -107,6 +113,11 @@ public interface OnDemandAgent {
   OnDemandResult handle(ProviderCache providerCache, Map<String, ?> data);
 
   Collection<Map> pendingOnDemandRequests(ProviderCache providerCache);
+
+  default Collection<Map> pendingOnDemandRequests(
+      ProviderCache providerCache, @Nonnull Map<String, String> data) {
+    return pendingOnDemandRequests(providerCache);
+  }
 
   default Map pendingOnDemandRequest(ProviderCache providerCache, String id) {
     Collection<Map> pendingOnDemandRequests = pendingOnDemandRequests(providerCache);

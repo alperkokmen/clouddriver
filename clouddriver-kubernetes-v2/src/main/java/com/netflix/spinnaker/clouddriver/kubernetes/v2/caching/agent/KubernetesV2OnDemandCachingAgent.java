@@ -43,6 +43,7 @@ import com.netflix.spinnaker.moniker.Namer;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -340,11 +341,23 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
 
   @Override
   public boolean handles(OnDemandType type, String cloudProvider) {
+    return handles(type, cloudProvider, Collections.emptyMap());
+  }
+
+  @Override
+  public boolean handles(
+      OnDemandType type, String cloudProvider, @Nonnull Map<String, String> data) {
     return type == Manifest && cloudProvider.equals(KubernetesCloudProvider.ID);
   }
 
   @Override
   public Collection<Map> pendingOnDemandRequests(ProviderCache providerCache) {
+    return pendingOnDemandRequests(providerCache, Collections.emptyMap());
+  }
+
+  @Override
+  public Collection<Map> pendingOnDemandRequests(
+      ProviderCache providerCache, @Nonnull Map<String, String> data) {
     if (!handleReadRequests()) {
       return Collections.emptyList();
     }
