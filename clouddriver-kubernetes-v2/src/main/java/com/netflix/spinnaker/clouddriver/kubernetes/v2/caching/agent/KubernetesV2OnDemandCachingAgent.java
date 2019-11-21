@@ -347,7 +347,11 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
   @Override
   public boolean handles(
       OnDemandType type, String cloudProvider, @Nonnull Map<String, String> data) {
-    return type == Manifest && cloudProvider.equals(KubernetesCloudProvider.ID);
+    return type == Manifest
+        && cloudProvider.equals(KubernetesCloudProvider.ID)
+        && handleAccount(data.get("account"))
+        && handleKind(data.get("name"))
+        && handleNamespace(data.get("location"));
   }
 
   @Override
@@ -358,24 +362,10 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
   @Override
   public Collection<Map> pendingOnDemandRequests(
       ProviderCache providerCache, @Nonnull Map<String, String> data) {
-    if (!handleReadRequests()) {
-      return Collections.emptyList();
-    }
-
-    List<KubernetesKind> primaryKinds = primaryKinds();
+    boolean hasScopedManifest = data.containsKey("account") && data.containsKey("name");
     List<String> matchingKeys =
-        providerCache.getIdentifiers(ON_DEMAND_TYPE).stream()
-            .map(Keys::parseKey)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .filter(k -> k instanceof Keys.InfrastructureCacheKey)
-            .map(i -> (Keys.InfrastructureCacheKey) i)
-            .filter(
-                i ->
-                    i.getAccount().equals(getAccountName())
-                        && primaryKinds.contains(i.getKubernetesKind()))
-            .map(Keys.InfrastructureCacheKey::toString)
-            .collect(Collectors.toList());
+        hasScopedManifest ? getMatchingKeys(data) : getMatchingKeys(providerCache);
+    log.debug("{}: data={}, matchingKeys={}", getOnDemandAgentType(), data, matchingKeys);
 
     return providerCache.getAll(ON_DEMAND_TYPE, matchingKeys).stream()
         .map(
@@ -404,10 +394,14 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
   }
 
   /**
-   * When fetching on-demand requests, we delegate to single caching agent, as the read request from
-   * the cache will return results for all namespaces anyway. This way we avoid having all agents
-   * perform the same query and filter to their namespaces, only to then re-combine all the results
-   * in the end.
+   * Note: This is only used if a scoped manifest isn't provided to {@link
+   * KubernetesV2OnDemandCachingAgent#pendingOnDemandRequests(ProviderCache, Map)} using 'data'
+   * argument.
+   *
+   * <p>When fetching on-demand requests, we delegate to single caching agent, as the read request
+   * from the cache will return results for all namespaces anyway. This way we avoid having all
+   * agents perform the same query and filter to their namespaces, only to then re-combine all the
+   * results in the end.
    */
   private boolean handleReadRequests() {
     return agentIndex == 0;
@@ -418,5 +412,57 @@ public abstract class KubernetesV2OnDemandCachingAgent extends KubernetesV2Cachi
       return handleClusterScopedResources();
     }
     return getNamespaces().contains(namespace);
+  }
+
+  private boolean handleKind(String fullName) {
+    if (StringUtils.isEmpty(fullName)) {
+      return true;
+    }
+
+    final Pair<KubernetesKind, String> parsedName =
+        KubernetesManifest.fromFullResourceName(fullName);
+    final KubernetesKind kind = parsedName.getLeft();
+    return primaryKinds().contains(kind);
+  }
+
+  private boolean handleAccount(String account) {
+    if (StringUtils.isEmpty(account)) {
+      return true;
+    }
+
+    return handlesAccount(account);
+  }
+
+  private List<String> getMatchingKeys(ProviderCache providerCache) {
+    if (!handleReadRequests()) {
+      return Collections.emptyList();
+    }
+
+    return providerCache.getIdentifiers(ON_DEMAND_TYPE).stream()
+        .map(Keys::parseKey)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(k -> k instanceof Keys.InfrastructureCacheKey)
+        .map(i -> (Keys.InfrastructureCacheKey) i)
+        .filter(
+            i ->
+                i.getAccount().equals(getAccountName())
+                    && primaryKinds().contains(i.getKubernetesKind()))
+        .map(Keys.InfrastructureCacheKey::toString)
+        .collect(Collectors.toList());
+  }
+
+  private List<String> getMatchingKeys(Map<String, String> data) {
+    final String account = data.get("account");
+    final String namespace = data.getOrDefault("location", "");
+    final String fullName = data.get("name");
+
+    final Pair<KubernetesKind, String> parsedName =
+        KubernetesManifest.fromFullResourceName(fullName);
+    final KubernetesKind kind = parsedName.getLeft();
+    final String name = parsedName.getRight();
+
+    return Collections.singletonList(
+        Keys.InfrastructureCacheKey.createKey(kind, account, namespace, name));
   }
 }
